@@ -56,6 +56,9 @@ void lspci_enumerate_devices(struct pci_devices_list* list, pci_device_handler h
             continue;
         }
 
+        if (device_info.dwType != 2)
+            continue;
+
         device.product_id = device_info.hid.dwProductId;
         device.vendor_id = device_info.hid.dwVendorId;
         handler(NULL, &device);
