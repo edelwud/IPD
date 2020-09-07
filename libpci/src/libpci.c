@@ -1,66 +1,89 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "../include/libpci.h"
 
-struct pci_devices_list* lspci_get_devices_list(char error[LIBPCI_ERROR_SIZE]) {
-    UINT device_number;
-    GetRawInputDeviceList(NULL, &device_number, sizeof(RAWINPUTDEVICELIST));
-    if (device_number == 0) {
-        sprintf(error, TEXT("Cannot find any device"));
+bool libpci_parse_usb_hardware(char[LIBPCI_DEVICE_ID], struct pci_device*, char[LIBPCI_ERROR_SIZE]);
+
+HDEVINFO lspci_get_devices_list(char error[LIBPCI_ERROR_SIZE]) {
+    HDEVINFO device_list = SetupDiGetClassDevs(NULL, TEXT("USB"), NULL, DIGCF_PRESENT | DIGCF_ALLCLASSES);
+    if (device_list == INVALID_HANDLE_VALUE) {
+        sprintf(error, TEXT("Cannot get pci devices descriptor"));
         return NULL;
     }
-
-    PRAWINPUTDEVICELIST devices_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * device_number);
-    if (devices_list == NULL) {
-        sprintf(error, TEXT("Cannot to alloc memory"));
-        return NULL;
-    }
-
-    if (GetRawInputDeviceList(devices_list, &device_number, sizeof(RAWINPUTDEVICELIST)) < 0) {
-        free(devices_list);
-        sprintf(error, TEXT("Cannot fill devices list"));
-        return NULL;
-    }
-
-    struct pci_devices_list* list = (struct pci_devices_list*)malloc(sizeof(struct pci_devices_list));
-    list->device_list = devices_list;
-    list->device_count = device_number;
-    return list;
+    return device_list;
 }
 
-void lspci_free_devices_list(struct pci_devices_list* list) {
-    free(list->device_list);
-    free(list);
+void lspci_free_devices_list(HDEVINFO list) {
+    SetupDiDestroyDeviceInfoList(list);
 }
 
-void lspci_enumerate_devices(struct pci_devices_list* list, pci_device_handler handler) {
-    for (int i = 0; i < list->device_count; i++) {
+void lspci_enumerate_devices(HDEVINFO list, pci_device_handler handler) {
+    char error[LIBPCI_ERROR_SIZE];
+    SP_DEVINFO_DATA device_info;
+    device_info.cbSize = sizeof(SP_DEVINFO_DATA);
+
+    BYTE description[LIBPCI_DEVICE_NAME];
+    BYTE hardware_id[LIBPCI_DEVICE_ID];
+
+    for (int i = 0; SetupDiEnumDeviceInfo(list, i, &device_info); i++) {
+        memset(description, 0, LIBPCI_DEVICE_NAME);
+        memset(hardware_id, 0, LIBPCI_DEVICE_ID);
+
         struct pci_device device;
-        UINT number;
+        memset(&device, 0, sizeof(device));
 
-        if (GetRawInputDeviceInfo(list->device_list[i].hDevice, RIDI_DEVICENAME, device.device_name, &number) < 0) {
-            char error[LIBPCI_ERROR_SIZE];
-            sprintf(error, TEXT("Cannot get device name"));
+        DWORD data_type, length;
+        if (!SetupDiGetDeviceRegistryProperty(
+                list, &device_info, SPDRP_DEVICEDESC,
+                &data_type, description, sizeof(description), &length)) {
+            sprintf(error, TEXT("Cannot read device description"));
             handler(error, NULL);
             continue;
         }
 
-        RID_DEVICE_INFO device_info;
-        device_info.cbSize = sizeof(RID_DEVICE_INFO);
-        UINT size = device_info.cbSize;
-
-        if (GetRawInputDeviceInfo(list->device_list[i].hDevice, RIDI_DEVICEINFO, &device_info, &size) < 0) {
-            char error[LIBPCI_ERROR_SIZE];
-            sprintf(error, TEXT("Cannot get device info"));
+        if (!SetupDiGetDeviceRegistryProperty(
+                list, &device_info, SPDRP_HARDWAREID,
+                &data_type, hardware_id, sizeof(hardware_id), &length)) {
+            sprintf(error, TEXT("Cannot read device hardware"));
             handler(error, NULL);
             continue;
         }
 
-        if (device_info.dwType != 2)
-            continue;
+        if (!libpci_parse_usb_hardware(hardware_id, &device, error)) {
+            handler(error, NULL);
+        }
 
-        device.product_id = device_info.hid.dwProductId;
-        device.vendor_id = device_info.hid.dwVendorId;
+        memcpy(device.device_name, description, LIBPCI_DEVICE_NAME);
+        memcpy(device.hardware_id, hardware_id, LIBPCI_DEVICE_ID);
         handler(NULL, &device);
     }
+}
+
+bool libpci_parse_usb_hardware(char hardware_id[LIBPCI_DEVICE_ID],
+        struct pci_device* device, char error[LIBPCI_ERROR_SIZE]) {
+    char* vid = strstr(hardware_id, "VID_");
+    if (vid == NULL) {
+        sprintf(error, "Cannot detect vendor id");
+        return false;
+    }
+    char buffer[BUFSIZ];
+    memset(buffer, 0, BUFSIZ);
+    for (int i = 4; vid[i] != '&'; i++) {
+        buffer[i-4] = vid[i];
+    }
+
+    device->vendor_id = strtol(buffer, NULL, 16);
+    memset(buffer, 0, BUFSIZ);
+
+    char* pid = strstr(hardware_id, "PID_");
+    if (pid == NULL) {
+        sprintf(error, "Cannot detect product id");
+        return false;
+    }
+    for (int i = 4; pid[i] != '&'; i++) {
+        buffer[i-4] = pid[i];
+    }
+    device->product_id = strtol(buffer, NULL, 16);
+    return true;
 }

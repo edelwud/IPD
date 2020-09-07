@@ -3,16 +3,16 @@
 
 void handler(char error[LIBPCI_ERROR_SIZE], struct pci_device* device) {
     if (error != NULL) {
-        printf("Error: %s", error);
+        printf("Error: %s\n", error);
         return;
     }
-    printf("Device: %s\nVendor id: %d\nProduct id: %d\n",
-            device->device_name, device->vendor_id, device->product_id);
+    printf("Device: %s\nHardware id: %s\nProduct id: %d\nVendor id: %d\n",
+            device->device_name, device->hardware_id, device->product_id, device->vendor_id);
 }
 
 int main() {
     char error[LIBPCI_ERROR_SIZE];
-    struct pci_devices_list* list = lspci_get_devices_list(error);
+    HDEVINFO list = lspci_get_devices_list(error);
 
     lspci_enumerate_devices(list, handler);
 
