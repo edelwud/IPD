@@ -5,6 +5,7 @@ include(GNUInstallDirs)
 add_library(${PROJECT_NAME} STATIC src/libpci.c)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
+target_include_directories(${PROJECT_NAME} PRIVATE tests)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
