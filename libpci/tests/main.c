@@ -1,9 +1,13 @@
 #include <stdio.h>
-
-#include <lspci.h>
+#include <libpci.h>
 
 void handler(char error[LSPCI_ERROR_SIZE], struct pci_device* device) {
-    printf("Device: %s\nVendor id: %d\nProduct id: %d\n", device->device_name, device->vendor_id, device->product_id);
+    if (error != NULL) {
+        printf("Error: %s", error);
+        return;
+    }
+    printf("Device: %s\nVendor id: %d\nProduct id: %d\n",
+            device->device_name, device->vendor_id, device->product_id);
 }
 
 int main() {
