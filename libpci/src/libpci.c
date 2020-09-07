@@ -2,7 +2,7 @@
 
 #include "../include/libpci.h"
 
-struct pci_devices_list* lspci_get_devices_list(char error[LSPCI_ERROR_SIZE]) {
+struct pci_devices_list* lspci_get_devices_list(char error[LIBPCI_ERROR_SIZE]) {
     UINT device_number;
     GetRawInputDeviceList(NULL, &device_number, sizeof(RAWINPUTDEVICELIST));
     if (device_number == 0) {
@@ -39,7 +39,7 @@ void lspci_enumerate_devices(struct pci_devices_list* list, pci_device_handler h
         UINT number;
 
         if (GetRawInputDeviceInfo(list->device_list[i].hDevice, RIDI_DEVICENAME, device.device_name, &number) < 0) {
-            char error[LSPCI_ERROR_SIZE];
+            char error[LIBPCI_ERROR_SIZE];
             sprintf(error, TEXT("Cannot get device name"));
             handler(error, NULL);
             continue;
@@ -50,7 +50,7 @@ void lspci_enumerate_devices(struct pci_devices_list* list, pci_device_handler h
         UINT size = device_info.cbSize;
 
         if (GetRawInputDeviceInfo(list->device_list[i].hDevice, RIDI_DEVICEINFO, &device_info, &size) < 0) {
-            char error[LSPCI_ERROR_SIZE];
+            char error[LIBPCI_ERROR_SIZE];
             sprintf(error, TEXT("Cannot get device info"));
             handler(error, NULL);
             continue;

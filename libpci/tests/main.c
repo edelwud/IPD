@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <libpci.h>
 
-void handler(char error[LSPCI_ERROR_SIZE], struct pci_device* device) {
+void handler(char error[LIBPCI_ERROR_SIZE], struct pci_device* device) {
     if (error != NULL) {
         printf("Error: %s", error);
         return;
@@ -11,7 +11,7 @@ void handler(char error[LSPCI_ERROR_SIZE], struct pci_device* device) {
 }
 
 int main() {
-    char error[LSPCI_ERROR_SIZE];
+    char error[LIBPCI_ERROR_SIZE];
     struct pci_devices_list* list = lspci_get_devices_list(error);
 
     lspci_enumerate_devices(list, handler);
