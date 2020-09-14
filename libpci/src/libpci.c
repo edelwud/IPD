@@ -5,8 +5,8 @@
 
 bool libpci_parse_usb_hardware(char[LIBPCI_DEVICE_ID], struct pci_device*, char[LIBPCI_ERROR_SIZE]);
 
-HDEVINFO lspci_get_devices_list(char error[LIBPCI_ERROR_SIZE]) {
-    HDEVINFO device_list = SetupDiGetClassDevs(NULL, TEXT("USB"), NULL, DIGCF_PRESENT | DIGCF_ALLCLASSES);
+HDEVINFO libpci_get_devices_list(char error[LIBPCI_ERROR_SIZE]) {
+    HDEVINFO device_list = SetupDiGetClassDevs(NULL, TEXT("PCI"), NULL, DIGCF_PRESENT | DIGCF_ALLCLASSES);
     if (device_list == INVALID_HANDLE_VALUE) {
         sprintf(error, TEXT("Cannot get pci devices descriptor"));
         return NULL;
@@ -14,11 +14,11 @@ HDEVINFO lspci_get_devices_list(char error[LIBPCI_ERROR_SIZE]) {
     return device_list;
 }
 
-void lspci_free_devices_list(HDEVINFO list) {
+void libpci_free_devices_list(HDEVINFO list) {
     SetupDiDestroyDeviceInfoList(list);
 }
 
-void lspci_enumerate_devices(HDEVINFO list, pci_device_handler handler) {
+void libpci_enumerate_devices(HDEVINFO list, pci_device_handler handler) {
     char error[LIBPCI_ERROR_SIZE];
     SP_DEVINFO_DATA device_info;
     device_info.cbSize = sizeof(SP_DEVINFO_DATA);
@@ -62,7 +62,7 @@ void lspci_enumerate_devices(HDEVINFO list, pci_device_handler handler) {
 
 bool libpci_parse_usb_hardware(char hardware_id[LIBPCI_DEVICE_ID],
         struct pci_device* device, char error[LIBPCI_ERROR_SIZE]) {
-    char* vid = strstr(hardware_id, "VID_");
+    char* vid = strstr(hardware_id, "VEN_");
     if (vid == NULL) {
         sprintf(error, "Cannot detect vendor id");
         return false;
@@ -76,7 +76,7 @@ bool libpci_parse_usb_hardware(char hardware_id[LIBPCI_DEVICE_ID],
     device->vendor_id = strtol(buffer, NULL, 16);
     memset(buffer, 0, BUFSIZ);
 
-    char* pid = strstr(hardware_id, "PID_");
+    char* pid = strstr(hardware_id, "DEV_");
     if (pid == NULL) {
         sprintf(error, "Cannot detect product id");
         return false;

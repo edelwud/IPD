@@ -8,14 +8,15 @@ void handler(char error[LIBPCI_ERROR_SIZE], struct pci_device* device) {
     }
     printf("Device: %s\nHardware id: %s\nProduct id: %d\nVendor id: %d\n",
             device->device_name, device->hardware_id, device->product_id, device->vendor_id);
+    puts("---------------------------");
 }
 
 int main() {
     char error[LIBPCI_ERROR_SIZE];
-    HDEVINFO list = lspci_get_devices_list(error);
+    HDEVINFO list = libpci_get_devices_list(error);
 
-    lspci_enumerate_devices(list, handler);
+    libpci_enumerate_devices(list, handler);
 
-    lspci_free_devices_list(list);
+    libpci_free_devices_list(list);
     return 0;
 }

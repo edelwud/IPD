@@ -16,8 +16,8 @@ struct pci_device {
 
 typedef void(*pci_device_handler)(char[LIBPCI_ERROR_SIZE], struct pci_device*);
 
-extern HDEVINFO lspci_get_devices_list(char error[LIBPCI_ERROR_SIZE]);
+extern HDEVINFO libpci_get_devices_list(char error[LIBPCI_ERROR_SIZE]);
 
-extern void lspci_enumerate_devices(HDEVINFO devices_list, pci_device_handler);
+extern void libpci_enumerate_devices(HDEVINFO devices_list, pci_device_handler);
 
-extern void lspci_free_devices_list(HDEVINFO devices_list);
+extern void libpci_free_devices_list(HDEVINFO devices_list);
