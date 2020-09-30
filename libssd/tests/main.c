@@ -10,6 +10,7 @@ void handler(CHAR error[LIBSSD_ERROR_SIZE], struct storage_device* device) {
            device->model, device->creator, device->serial, device->firmware, device->bus_type);
     printf("Total device volume: %.2fGB\n", (double)(device->disk_size / 1024 / 1024 / 1024));
     printf("Free device volume: %.2fGB\n", (double)(device->free_disk_space / 1024 / 1024 / 1024));
+    printf("\n%s", device->features);
     puts("---------------------------");
 }
 
