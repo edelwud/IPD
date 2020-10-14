@@ -190,7 +190,6 @@ void libssd_get_storage_interfaces(CHAR error[LIBSSD_DEVICE_PATH_SIZE],
             (protocol_data_descr->Size != sizeof(STORAGE_PROTOCOL_DATA_DESCRIPTOR))) {
             continue;
         }
-        //if (protocolDataDescr->ProtocolSpecificData.FixedProtocolReturnData)
         sprintf(info->features,
                 TEXT("%sSupport: %s\n"),
                 info->features,
