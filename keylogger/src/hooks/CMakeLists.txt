@@ -1,8 +1,11 @@
+set(CMAKE_CXX_STANDARD 20)
+
 add_library(
     hooks
         STATIC
         keyboard.cpp
         mouse.cpp
+        events.cpp
 )
 add_library(keylogger::hooks ALIAS hooks)
 
