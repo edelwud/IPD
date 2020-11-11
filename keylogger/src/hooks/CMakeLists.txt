@@ -1,8 +1,8 @@
 add_library(
     hooks
         STATIC
-            keyboard_events.cpp
-            mouse_events.cpp
+        keyboard.cpp
+        mouse.cpp
 )
 add_library(keylogger::hooks ALIAS hooks)
 

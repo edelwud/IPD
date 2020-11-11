@@ -1,8 +1,8 @@
 add_library(
     logger
         STATIC
-            mouse_logger.cpp
-            keyboard_logger.cpp
+        mouse.cpp
+        keyboard.cpp
 )
 add_library(keylogger::logger ALIAS logger)
 

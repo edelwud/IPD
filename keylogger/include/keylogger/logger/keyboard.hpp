@@ -1,6 +1,6 @@
 #pragma once
 
-#include "logger.hpp"
+#include <keylogger/logger/logger.hpp>
 
 class KeyboardLogger:
         public Logger {
