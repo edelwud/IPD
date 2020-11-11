@@ -6,7 +6,8 @@
 
 #define KEYBOARD_EVENT_PATH "/dev/input/event6"
 
-struct KeyboardEvent: public Event {
+struct KeyboardEvent:
+        public Event {
     std::string key;
 };
 

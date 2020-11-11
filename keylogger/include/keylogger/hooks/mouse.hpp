@@ -6,9 +6,12 @@
 
 #define MOUSE_EVENT_PATH "/dev/input/event20"
 
-struct MouseEvent: public Event {
+struct MouseEvent:
+        public Event {
     __u16 x;
     __u16 y;
+    bool leftButtonClicked;
+    bool rightButtonClicked;
 };
 
 class MouseEvents:

@@ -11,7 +11,7 @@ void KeyboardEvents::ConnectHandler(std::function<void(Event &)> callback) {
             if (ev.value == 0) {
                 shifted = false;
             }
-            return 0;
+            return;
         }
         if (ev.type == EV_KEY && ev.value != 0) {
             KeyboardEvent event;
